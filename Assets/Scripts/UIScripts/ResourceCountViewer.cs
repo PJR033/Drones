@@ -7,10 +7,12 @@ public class ResourceCountViewer : MonoBehaviour
     [SerializeField] private ResourceCounter _counter;
 
     private TextMeshProUGUI _text;
+    private string _counterHeaderText;
 
     private void Awake()
     {
         _text = GetComponent<TextMeshProUGUI>();
+        _counterHeaderText = "Кристаллов: ";
     }
 
     private void OnEnable()
@@ -25,7 +27,7 @@ public class ResourceCountViewer : MonoBehaviour
 
     private void ViewResourceCount(int crystalsCount)
     {
-        string crystalsText = "Кристаллов: ";
-        _text.text = crystalsText + crystalsCount.ToString();
+        string counterValueText = crystalsCount.ToString();
+        _text.text = _counterHeaderText + counterValueText;
     }
 }

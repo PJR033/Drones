@@ -1,63 +1,115 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using System.Collections;
 
-[RequireComponent(typeof(ResourceCounter), (typeof(ResourcesHandler)))]
-public class Base : MonoBehaviour
+public class Base : Interactable
 {
-    [SerializeField] private ObjectPool _dronesPool;
-    [SerializeField] private ObjectPool _crystalsPool;
-
+    private ResourceCounter _resourceCounter;
+    private ResourceHandler _resourceHandler;
     private List<CollectionDrone> _drones = new List<CollectionDrone>();
-    private ResourceCounter _crystalsCounter;
-    private ResourcesHandler _resourcesHandler;
+    private CollectionDrone _readyDrone = null;
+    private Flag _activeFlag = null;
+    private int _spawnBaseCost = 5;
 
-    private void Awake()
+    public event Action<Base> TrySpawnFlag;
+    public event Action<Crystal> CrystalCollected;
+
+    private void Start()
     {
-        _resourcesHandler = GetComponent<ResourcesHandler>();
-        _crystalsCounter = GetComponent<ResourceCounter>();
-
-        for (int i = 0; i < _dronesPool.transform.childCount; i++)
-        {
-            _drones.Add(_dronesPool.transform.GetChild(i).GetComponent<CollectionDrone>());
-        }
+        StartCoroutine(FindingReadyDrone());
     }
 
     private void Update()
     {
-        SendDrone();
+        if (_readyDrone != null)
+        {
+            if (_activeFlag != null && _resourceCounter.CrystalsCount >= _spawnBaseCost)
+            {
+                SendDroneBuild();
+            }
+            else
+            {
+                SendDroneCollect();
+            }
+        }
+    }
+
+    public override void OnClick()
+    {
+        if (IsSelected)
+        {
+            TrySpawnFlag?.Invoke(this);
+        }
+
+        base.OnClick();
+    }
+
+    public void Initialize(ResourceHandler resourceHandler, ResourceCounter resourceCounter)
+    {
+        _resourceCounter = resourceCounter;
+        _resourceHandler = resourceHandler;
+    }
+
+    public void OnFlagSpawn(Flag flag)
+    {
+        _activeFlag = flag;
+    }
+
+    public void RemoveDrone(CollectionDrone removedDrone)
+    {
+        _drones.Remove(removedDrone);
+    }
+
+    public void AddDrone(CollectionDrone addedDrone)
+    {
+        _drones.Add(addedDrone);
+        addedDrone.SetBase(this);
     }
 
     public void TakeResource(Resource resource)
     {
         if (resource is Crystal)
         {
-            _crystalsPool.PutObject(resource.gameObject);
-            _crystalsCounter.IncreaseCrystalsCount();
+            CrystalCollected?.Invoke((Crystal)resource);
         }
     }
 
-    private void SendDrone()
+    private void SendDroneCollect()
     {
-        if (_resourcesHandler.AvailableCrystalsCount > 0)
+        Resource resource = _resourceHandler.GiveResource(transform.position);
+
+        if (resource != null)
         {
-            FindReadyDrone();
+            StartCoroutine(_readyDrone.CollectingResource(resource));
+            _readyDrone = null;
         }
     }
 
-    private void FindReadyDrone()
+    private void SendDroneBuild()
     {
-        foreach (CollectionDrone drone in _drones)
+        StartCoroutine(_readyDrone.BuildingBase(_activeFlag, _resourceCounter, _spawnBaseCost));
+        _readyDrone = null;
+        _activeFlag = null;
+    }
+
+    private IEnumerator FindingReadyDrone()
+    {
+        bool isCanFind = true;
+
+        while (isCanFind)
         {
-            if (drone.IsReadyToUse)
+            if (_readyDrone == null && _drones.Count > 0)
             {
-                Resource nearlestResource = _resourcesHandler.FindNearlestResource();
-
-                if (nearlestResource != null)
+                foreach (CollectionDrone drone in _drones)
                 {
-                    StartCoroutine(drone.CollectingResource(nearlestResource));
-                    break;
+                    if (drone.IsReadyToUse)
+                    {
+                        _readyDrone = drone;
+                    }
                 }
             }
+
+            yield return null;
         }
     }
 }
