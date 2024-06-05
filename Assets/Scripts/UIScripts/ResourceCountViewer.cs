@@ -4,30 +4,37 @@ using UnityEngine;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class ResourceCountViewer : MonoBehaviour
 {
-    [SerializeField] private ResourceCounter _counter;
+    [SerializeField] private BaseUIActivator _baseUIActivator;
 
     private TextMeshProUGUI _text;
-    private string _counterHeaderText;
+    private string _counterHeaderText = "Кристаллов: ";
 
     private void Awake()
     {
         _text = GetComponent<TextMeshProUGUI>();
-        _counterHeaderText = "Кристаллов: ";
     }
 
     private void OnEnable()
     {
-        _counter.CrystalsCountChanged += ViewResourceCount;
+        _baseUIActivator.BaseSelected += ViewResourceCount;
+        _baseUIActivator.BaseUnselected += UnsubscribeCounter;
     }
 
     private void OnDisable()
     {
-        _counter.CrystalsCountChanged -= ViewResourceCount;
+        _baseUIActivator.BaseSelected -= ViewResourceCount;
+        _baseUIActivator.BaseUnselected -= UnsubscribeCounter;
     }
 
-    private void ViewResourceCount(int crystalsCount)
+    private void ViewResourceCount(Base selectedBase)
     {
-        string counterValueText = crystalsCount.ToString();
+        string counterValueText = selectedBase.ResourceCounter.CrystalsCount.ToString();
         _text.text = _counterHeaderText + counterValueText;
+        selectedBase.ResourceCounter.CrystalsCountChanged += ViewResourceCount;
+    }
+
+    private void UnsubscribeCounter(Base unselectedBase)
+    {
+        unselectedBase.ResourceCounter.CrystalsCountChanged -= ViewResourceCount;
     }
 }

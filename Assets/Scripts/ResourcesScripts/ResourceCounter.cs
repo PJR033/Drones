@@ -1,47 +1,36 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Base))]
 public class ResourceCounter : MonoBehaviour
 {
-    [SerializeField] private BaseSpawner _baseSpawner;
+    private Base _collectingBase;
 
-    private List<Base> _subscribeBases = new List<Base>();
+    public event Action<Base> CrystalsCountChanged;
 
-    public event Action<int> CrystalsCountChanged;
+    public int CrystalsCount { get; private set; } = 0;
 
-    public int CrystalsCount { get; private set; }
-
-    private void OnEnable()
+    private void Start()
     {
-        _baseSpawner.BaseSpawn += SubscribeOnBase;
+        _collectingBase = GetComponent<Base>();
+        _collectingBase.CrystalCollected += IncreaseCrystalsCount;
     }
 
     private void OnDisable()
     {
-        _baseSpawner.BaseSpawn -= SubscribeOnBase;
-
-        foreach (Base subscribeBase in _subscribeBases)
-        {
-            subscribeBase.CrystalCollected -= IncreaseCrystalsCount;
-        }
+        _collectingBase = GetComponent<Base>();
+        _collectingBase.CrystalCollected -= IncreaseCrystalsCount;
     }
 
     public void DecreaseCrystalsCount(int spentCrystalsCount)
     {
         CrystalsCount = Mathf.Clamp(CrystalsCount - spentCrystalsCount, 0, CrystalsCount);
-        CrystalsCountChanged?.Invoke(CrystalsCount);
+        CrystalsCountChanged?.Invoke(_collectingBase);
     }
 
     private void IncreaseCrystalsCount(Crystal crystal)
     {
         CrystalsCount++;
-        CrystalsCountChanged?.Invoke(CrystalsCount);
-    }
-
-    private void SubscribeOnBase(Base subscribeBase)
-    {
-        _subscribeBases.Add(subscribeBase);
-        subscribeBase.CrystalCollected += IncreaseCrystalsCount;
+        CrystalsCountChanged?.Invoke(_collectingBase);
     }
 }

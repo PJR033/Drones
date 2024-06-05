@@ -8,6 +8,8 @@ public class ResourceHandler : MonoBehaviour
 
     private List<Crystal> _crystals = new List<Crystal>();
 
+    public int AvailableCrystalsCount { get; private set; } = 0;
+
     public void OnEnable()
     {
         _crystalsSpawner.ResourceSpawned += AddResource;
@@ -52,6 +54,7 @@ public class ResourceHandler : MonoBehaviour
         if (resource is Crystal crystal)
         {
             _crystals.Add(crystal);
+            AvailableCrystalsCount = _crystals.Count;
         }
     }
 
@@ -60,6 +63,7 @@ public class ResourceHandler : MonoBehaviour
         if (resource is Crystal crystal)
         {
             _crystals.Remove(crystal);
+            AvailableCrystalsCount = _crystals.Count;
         }
     }
 }

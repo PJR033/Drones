@@ -16,9 +16,9 @@ public class CollectionDrone : MonoBehaviour
     public IEnumerator CollectingResource(Resource resource)
     {
         IsReadyToUse = false;
-        yield return MovingToPosition(resource.transform.position);
+        yield return StartCoroutine(MovingToPosition(resource.transform.position));
         resource.transform.SetParent(transform);
-        yield return MovingToPosition(_base.transform.position);
+        yield return StartCoroutine(MovingToPosition(_base.transform.position));
         resource.transform.SetParent(null);
         _base.TakeResource(resource);
         IsReadyToUse = true;
@@ -27,7 +27,7 @@ public class CollectionDrone : MonoBehaviour
     public IEnumerator BuildingBase(Flag flag, ResourceCounter resourceCounter, int spawnBaseCost)
     {
         IsReadyToUse = false;
-        yield return MovingToPosition(flag.transform.position);
+        yield return StartCoroutine(MovingToPosition(flag.transform.position));
 
         if (flag.gameObject.activeInHierarchy && transform.position == flag.transform.position)
         {
@@ -39,9 +39,10 @@ public class CollectionDrone : MonoBehaviour
             }
 
             FlagDeactivated?.Invoke(flag);
+            _base.OnFlagDeactivated();
         }
 
-        yield return MovingToPosition(_base.transform.position);
+        yield return StartCoroutine(MovingToPosition(_base.transform.position));
         IsReadyToUse = true;
     }
 

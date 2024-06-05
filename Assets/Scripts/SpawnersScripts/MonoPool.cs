@@ -8,6 +8,8 @@ public class MonoPool<T> where T : MonoBehaviour
     private Transform _container;
     private Queue<T> _pool = new Queue<T>();
 
+    public List<T> ActiveObjects { get; private set; } = new List<T>();
+
     public MonoPool(T prefab, int count, Transform container, bool autoExpand = true)
     {
         _prefab = prefab;
@@ -21,11 +23,13 @@ public class MonoPool<T> where T : MonoBehaviour
     {
         if (HasFreeElement(out T element))
         {
+            ActiveObjects.Add(element);
             return element;
         }
         else if (_autoExpand)
         {
             T newObject = CreateObject(true);
+            ActiveObjects.Add(newObject);
             return newObject;
         }
 
@@ -34,6 +38,7 @@ public class MonoPool<T> where T : MonoBehaviour
 
     public void PutElement(T element)
     {
+        ActiveObjects.Remove(element);
         element.transform.SetParent(_container);
         element.gameObject.SetActive(false);
         _pool.Enqueue(element);

@@ -1,35 +1,41 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class DronesSpawner : Spawner
+public class DronesSpawner : Spawner<CollectionDrone>
 {
-    [SerializeField] private CollectionDrone _prefab;
-    [SerializeField] private SpawnDroneButton _spawnDroneButton;
+    [SerializeField] private BaseSpawner _baseSpawner;
 
-    private MonoPool<CollectionDrone> _dronesPool;
+    private List<Base> _subscribeBases = new List<Base>();
 
-    public event Action<CollectionDrone> DroneSpawn;
-
-    private void Awake()
-    {
-        _dronesPool = new MonoPool<CollectionDrone>(_prefab, MaxObjectsCount, ObjectsContainer, AutoExpand);
-    }
+    public event Action<CollectionDrone> DroneSpawned;
 
     private void OnEnable()
     {
-        _spawnDroneButton.SpawnDrone += SpawnDrone;
+        _baseSpawner.BaseSpawn += SubscribeOnBase;
     }
 
     private void OnDisable()
     {
-        _spawnDroneButton.SpawnDrone -= SpawnDrone;
+        _baseSpawner.BaseSpawn -= SubscribeOnBase;
+
+        foreach (Base subscribeBase in _subscribeBases)
+        {
+            subscribeBase.SpawnResourcesCollected -= SpawnDrone;
+        }
     }
 
     public void SpawnDrone(Base dronesBase)
     {
-        CollectionDrone drone = _dronesPool.GetFreeElement();
+        CollectionDrone drone = SpawnMono();
         dronesBase.AddDrone(drone);
         drone.transform.position = dronesBase.transform.position;
-        DroneSpawn(drone);
+        DroneSpawned?.Invoke(drone);
+    }
+
+    private void SubscribeOnBase(Base subscribeBase)
+    {
+        subscribeBase.SpawnResourcesCollected += SpawnDrone;
+        _subscribeBases.Add(subscribeBase);
     }
 }

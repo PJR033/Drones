@@ -1,23 +1,12 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FlagSpawner : Spawner
+public class FlagSpawner : Spawner<Flag>
 {
-    [SerializeField] private Flag _prefab;
     [SerializeField] private Camera _camera;
     [SerializeField] private BaseSpawner _baseSpawner;
 
-    private MonoPool<Flag> _flagsPool;
     private List<Base> _subscribeBases = new List<Base>();
-    private Flag _previousFlag;
-
-    public event Action<Flag, Base> FlagSpawned;
-
-    private void Awake()
-    {
-        _flagsPool = new MonoPool<Flag>(_prefab, MaxObjectsCount, ObjectsContainer, AutoExpand);
-    }
 
     private void OnEnable()
     {
@@ -36,7 +25,7 @@ public class FlagSpawner : Spawner
 
     public void DeactivateFlag(Flag flag)
     {
-        _flagsPool.PutElement(flag);
+        DeactivateMono(flag);
     }
 
     private void TrySpawnFlag(Base selectedBase)
@@ -46,26 +35,26 @@ public class FlagSpawner : Spawner
 
         if (Physics.Raycast(ray, out hit, Mathf.Infinity) && hit.collider.TryGetComponent(out Platform platform))
         {
-            if (_previousFlag != null)
+            if (selectedBase.ActiveFlag != null)
             {
-                DeactivateFlag(_previousFlag);
+                DeactivateFlag(selectedBase.ActiveFlag);
+                selectedBase.OnFlagDeactivated();
             }
 
             Flag spawnedFlag = SpawnFlag(hit.point, selectedBase);
             selectedBase.OnFlagSpawn(spawnedFlag);
         }
-        else if (_previousFlag != null)
+        else if (selectedBase.ActiveFlag != null)
         {
-            DeactivateFlag(_previousFlag);
+            DeactivateFlag(selectedBase.ActiveFlag);
+            selectedBase.OnFlagDeactivated();
         }
     }
 
     private Flag SpawnFlag(Vector3 flagPosition, Base selectedBase)
     {
-        Flag flag = _flagsPool.GetFreeElement();
+        Flag flag = SpawnMono();
         flag.transform.position = flagPosition;
-        _previousFlag = flag;
-        FlagSpawned?.Invoke(flag, selectedBase);
         return flag;
     }
 

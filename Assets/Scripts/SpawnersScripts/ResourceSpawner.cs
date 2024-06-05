@@ -3,13 +3,11 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ResourceSpawner : Spawner
+public class ResourceSpawner : Spawner<Resource>
 {
-    [SerializeField] Resource _resourcePrefab;
     [SerializeField] private float _spawnDelay;
     [SerializeField] private BaseSpawner _baseSpawner;
 
-    private MonoPool<Resource> _resourcesPool;
     private WaitForSeconds _delay;
     private List<Transform> _spawnPoints = new List<Transform>();
     private List<Base> _subscribeBases = new List<Base>();
@@ -17,9 +15,9 @@ public class ResourceSpawner : Spawner
     public event Action<Resource> ResourceSpawned;
     public event Action<Resource> ResourceDeactivated;
 
-    private void Awake()
+    protected override void Awake()
     {
-        _resourcesPool = new MonoPool<Resource>(_resourcePrefab, MaxObjectsCount, ObjectsContainer, AutoExpand);
+        base.Awake();
 
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -61,7 +59,7 @@ public class ResourceSpawner : Spawner
 
             if (spawnPoint != null)
             {
-                Resource resource = _resourcesPool.GetFreeElement();
+                Resource resource = SpawnMono();
                 resource.transform.position = spawnPoint.position;
                 ResourceSpawned?.Invoke(resource);
                 yield return _delay;
@@ -105,7 +103,7 @@ public class ResourceSpawner : Spawner
 
     private void DeactivateResource(Resource resource)
     {
-        _resourcesPool.PutElement(resource);
+        DeactivateMono(resource);
         ResourceDeactivated?.Invoke(resource);
     }
 }
