@@ -28,7 +28,8 @@ public class DronesSpawner : Spawner<CollectionDrone>
     public void SpawnDrone(Base dronesBase)
     {
         CollectionDrone drone = SpawnMono();
-        dronesBase.AddDrone(drone);
+        drone.Initialize(dronesBase);
+        dronesBase.OnDroneAdd();
         drone.transform.position = dronesBase.transform.position;
         DroneSpawned?.Invoke(drone);
     }

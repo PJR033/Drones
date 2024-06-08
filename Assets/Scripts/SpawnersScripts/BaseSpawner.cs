@@ -39,7 +39,8 @@ public class BaseSpawner : Spawner<Base>
     {
         Base newBase = SpawnMono();
         newBase.Initialize(_resourceHandler);
-        newBase.AddDrone(buildingDrone);
+        newBase.OnDroneAdd();
+        buildingDrone.Initialize(newBase);
         Vector3 spawnBasePosition = new Vector3(flagPosition.x, _startBaseSpawnPoint.position.y, flagPosition.z);
         newBase.transform.position = spawnBasePosition;
         BaseSpawn?.Invoke(newBase);

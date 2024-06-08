@@ -1,45 +1,22 @@
 using System;
-using System.Collections.Generic;
-using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(ResourceCounter))]
 public class Base : Interactable
 {
-    private ResourceHandler _resourceHandler;
-    private List<CollectionDrone> _drones = new List<CollectionDrone>();
-    private CollectionDrone _readyDrone = null;
-    private bool _isCanSendBuild = false;
-    private int _spawnBaseCost = 5;
+    private int _dronesCount = 0;
     private int _spawnDroneCost = 3;
-    private int _impossibilitySpawnDronesMaxCount = 1;
+    private int _buildMinDronesCount = 2;
 
     public event Action<Base> TrySpawnFlag;
     public event Action<Crystal> CrystalCollected;
     public event Action<Base> SpawnResourcesCollected;
 
+    public int SpawnBaseCost { get; private set; } = 5;
     public Flag ActiveFlag { get; private set; } = null;
     public ResourceCounter ResourceCounter { get; private set; }
-
-    private void Start()
-    {
-        StartCoroutine(FindingReadyDrone());
-    }
-
-    private void Update()
-    {
-        if (_readyDrone != null)
-        {
-            if (_isCanSendBuild && ResourceCounter.CrystalsCount >= _spawnBaseCost && _drones.Count > _impossibilitySpawnDronesMaxCount)
-            {
-                SendDroneBuild();
-            }
-            else if (_resourceHandler.AvailableCrystalsCount > 0)
-            {
-                SendDroneCollect();
-            }
-        }
-    }
+    public ResourceHandler ResourceHandler { get; private set; }
+    public bool IsCanBuild => ActiveFlag != null && _dronesCount >= _buildMinDronesCount && ResourceCounter.CrystalsCount >= SpawnBaseCost;
 
     public override void OnClick()
     {
@@ -53,14 +30,13 @@ public class Base : Interactable
 
     public void Initialize(ResourceHandler resourceHandler)
     {
-        _resourceHandler = resourceHandler;
+        ResourceHandler = resourceHandler;
         ResourceCounter = GetComponent<ResourceCounter>();
     }
 
     public void OnFlagSpawn(Flag flag)
     {
         ActiveFlag = flag;
-        _isCanSendBuild = true;
     }
 
     public void OnFlagDeactivated()
@@ -68,15 +44,14 @@ public class Base : Interactable
         ActiveFlag = null;
     }
 
-    public void RemoveDrone(CollectionDrone removedDrone)
+    public void OnDroneAdd()
     {
-        _drones.Remove(removedDrone);
+        _dronesCount++;
     }
 
-    public void AddDrone(CollectionDrone addedDrone)
+    public void OnDroneRemove()
     {
-        _drones.Add(addedDrone);
-        addedDrone.SetBase(this);
+        _dronesCount--;
     }
 
     public void TakeResource(Resource resource)
@@ -90,45 +65,6 @@ public class Base : Interactable
                 SpawnResourcesCollected?.Invoke(this);
                 ResourceCounter.DecreaseCrystalsCount(_spawnDroneCost);
             }
-        }
-    }
-
-    private void SendDroneCollect()
-    {
-        Resource resource = _resourceHandler.GiveResource(transform.position);
-
-        if (resource != null)
-        {
-            StartCoroutine(_readyDrone.CollectingResource(resource));
-            _readyDrone = null;
-        }
-    }
-
-    private void SendDroneBuild()
-    {
-        StartCoroutine(_readyDrone.BuildingBase(ActiveFlag, ResourceCounter, _spawnBaseCost));
-        _readyDrone = null;
-        _isCanSendBuild = false;
-    }
-
-    private IEnumerator FindingReadyDrone()
-    {
-        bool isCanFind = true;
-
-        while (isCanFind)
-        {
-            if (_readyDrone == null && _drones.Count > 0)
-            {
-                foreach (CollectionDrone drone in _drones)
-                {
-                    if (drone.IsReadyToUse)
-                    {
-                        _readyDrone = drone;
-                    }
-                }
-            }
-
-            yield return null;
         }
     }
 }
