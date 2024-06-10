@@ -22,7 +22,7 @@ public class CollectionDrone : MonoBehaviour
             if (Base.IsCanBuild)
             {
                 ActiveFlag = Base.ActiveFlag;
-                Base.OnFlagDeactivated();
+                Base.OnDroneSendedBuild();
             }
             else if (Base.ResourceHandler.AvailableCrystalsCount > 0)
             {

@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 33000010521464520}
   - component: {fileID: 23000012256943474}
   - component: {fileID: 1133323415788577414}
+  - component: {fileID: 7110005881701918446}
+  - component: {fileID: 1421075651403973655}
   m_Layer: 0
   m_Name: Crystall
   m_TagString: Untagged
@@ -96,3 +98,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ef343132ac44584e8abc3f6f34a4f6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!65 &7110005881701918446
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000012006197310}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.042266093, y: 0.049177926, z: 0.024205824}
+  m_Center: {x: -0.0043794825, y: 0.022142615, z: 0.010106784}
+--- !u!54 &1421075651403973655
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000012006197310}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

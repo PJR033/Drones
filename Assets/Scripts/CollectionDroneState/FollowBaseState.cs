@@ -1,10 +1,10 @@
+using UnityEngine;
+
 public class FollowBaseState : FollowState
 {
-    protected override void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        base.Update();
-
-        if (transform.position == FollowPosition)
+        if (other.TryGetComponent(out Base dronesBase) && dronesBase == CollectionDrone.Base)
         {
             if (CollectionDrone.CollectedResource != null)
             {

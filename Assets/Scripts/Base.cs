@@ -7,6 +7,7 @@ public class Base : Interactable
     private int _dronesCount = 0;
     private int _spawnDroneCost = 3;
     private int _buildMinDronesCount = 2;
+    private bool _isDroneSendedBuld = false;
 
     public event Action<Base> TrySpawnFlag;
     public event Action<Crystal> CrystalCollected;
@@ -16,7 +17,7 @@ public class Base : Interactable
     public Flag ActiveFlag { get; private set; } = null;
     public ResourceCounter ResourceCounter { get; private set; }
     public ResourceHandler ResourceHandler { get; private set; }
-    public bool IsCanBuild => ActiveFlag != null && _dronesCount >= _buildMinDronesCount && ResourceCounter.CrystalsCount >= SpawnBaseCost;
+    public bool IsCanBuild => ActiveFlag != null && _dronesCount >= _buildMinDronesCount && ResourceCounter.CrystalsCount >= SpawnBaseCost && _isDroneSendedBuld == false;
 
     public override void OnClick()
     {
@@ -42,6 +43,7 @@ public class Base : Interactable
     public void OnFlagDeactivated()
     {
         ActiveFlag = null;
+        _isDroneSendedBuld = false;
     }
 
     public void OnDroneAdd()
@@ -54,11 +56,16 @@ public class Base : Interactable
         _dronesCount--;
     }
 
+    public void OnDroneSendedBuild()
+    {
+        _isDroneSendedBuld = true;
+    }
+
     public void TakeResource(Resource resource)
     {
-        if (resource is Crystal)
+        if (resource is Crystal crystal)
         {
-            CrystalCollected?.Invoke((Crystal)resource);
+            CrystalCollected?.Invoke(crystal);
 
             if (ResourceCounter.CrystalsCount >= _spawnDroneCost && ActiveFlag == null)
             {

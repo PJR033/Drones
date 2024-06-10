@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public abstract class FollowState : DroneState
 {
     protected Vector3 FollowPosition;
@@ -9,10 +10,5 @@ public abstract class FollowState : DroneState
     private void Move()
     {
         transform.position = Vector3.MoveTowards(transform.position, FollowPosition, CollectionDrone.Speed * Time.deltaTime);
-    }
-
-    public void SetFollowPosition(Vector3 followPosition)
-    {
-        FollowPosition = followPosition;
     }
 }

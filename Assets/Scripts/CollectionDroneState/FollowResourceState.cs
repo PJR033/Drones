@@ -1,10 +1,10 @@
+using UnityEngine;
+
 public class FollowResourceState : FollowState
 {
-    protected override void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        base.Update();
-
-        if (transform.position == FollowPosition)
+        if (other.TryGetComponent(out Crystal crystal) && crystal == CollectionDrone.CollectedResource)
         {
             CollectionDrone.CollectedResource.transform.SetParent(transform);
             DroneStateMachine.StartFollowBase();

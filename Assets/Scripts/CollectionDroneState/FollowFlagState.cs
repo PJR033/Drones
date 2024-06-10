@@ -1,8 +1,10 @@
+using UnityEngine;
+
 public class FollowFlagState : FollowState
 {
     protected override void Update()
     {
-        if (CollectionDrone.ActiveFlag.gameObject.activeInHierarchy)
+        if (CollectionDrone.ActiveFlag.enabled)
         {
             base.Update();
         }
@@ -11,11 +13,18 @@ public class FollowFlagState : FollowState
             CollectionDrone.DeactivateFlag(CollectionDrone.ActiveFlag);
             DroneStateMachine.StartFollowBase();
         }
+    }
 
-        if (transform.position == FollowPosition && CollectionDrone.ActiveFlag.gameObject.activeInHierarchy)
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.TryGetComponent(out Flag flag) && flag == CollectionDrone.ActiveFlag)
         {
-            CollectionDrone.OnFlagReached(CollectionDrone.ActiveFlag);
-            DroneStateMachine.StartFollowBase();
+            if (CollectionDrone.ActiveFlag.enabled)
+            {
+                Debug.Log("Флаг достигнут");
+                CollectionDrone.OnFlagReached(CollectionDrone.ActiveFlag);
+                DroneStateMachine.StartFollowBase();
+            }
         }
     }
 
